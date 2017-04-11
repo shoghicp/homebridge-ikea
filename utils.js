@@ -1,4 +1,4 @@
-var exec = require('child_process').exec
+var execSync = require('child_process').execSync
 
 const coap = (method, config) => `coap-client -u "Client_identity" -k "${config.psk}" -m ${method} coaps://${config.ip}:5684/15001/`
 
@@ -9,10 +9,7 @@ module.exports.setBrightness = (config, id, brightness, callback) => {
   console.log(`Setting brightness of ${brightness} for ${id}`)
   var cmd = `echo '{ "3311" : [{ "5851" : ${brightness}} ] }' | ${put(config)}${id} -f -`
   console.log(cmd)
-  exec(cmd, function(error, stdout, stderr) {
-    console.log(stdout)
-    callback(stdout)
-  })
+  callback(execSync(cmd, {encoding: "utf8"}))
 }
 
 module.exports.setKelvin = (config, id, kelvin, callback) => {
@@ -43,20 +40,14 @@ module.exports.setKelvin = (config, id, kelvin, callback) => {
   console.log(`Setting kelvin of ${kelvin} for ${id}`)
   var cmd = `echo '{ "3311" : [{ "5709": ${colorX} , "5710": ${colorY} }] }' | ${put(config)}${id} -f -`
   console.log(cmd)
-  exec(cmd, function(error, stdout, stderr) {
-    console.log(stdout)
-    callback(stdout)
-  })
+  callback(execSync(cmd, {encoding: "utf8"}))
 }
 
 // @TODO: Figure out if the gateway actually don't support this
 module.exports.setOnOff = (config, id, state, callback) => {
   var cmd = `echo '{ "3311" : [{ "5580" : ${state}} ] }' | ${put(config)}${id} -f -`
   console.log(cmd)
-  exec(cmd, function(error, stdout, stderr) {
-    console.log(stdout)
-    callback(stdout)
-  })
+  callback(execSync(cmd, {encoding: "utf8"}))
 }
 
 const parseDeviceList = str => {
@@ -68,9 +59,7 @@ module.exports.getDevices = config => new Promise((resolve, reject) => {
   var cmd = get(config)
   console.log(cmd)
 
-  exec(cmd, function(error, stdout, stderr) {
-    resolve(parseDeviceList(stdout))
-  })
+  resolve(parseDeviceList(execSync(cmd, {encoding: "utf8"})))
 })
 
 const parseDevice = str => {
@@ -112,7 +101,6 @@ module.exports.getDevice = (config, id) => new Promise((resolve, reject) => {
   var cmd = get(config) + id
   console.log(cmd)
 
-  exec(cmd, function(error, stdout, stderr) {
-    resolve(parseDevice(stdout))
-  })
+  resolve(parseDevice(execSync(cmd, {encoding: "utf8"})))
+
 })
